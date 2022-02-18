@@ -7,6 +7,7 @@ setup.py
 src/django_labportalen.egg-info/PKG-INFO
 src/django_labportalen.egg-info/SOURCES.txt
 src/django_labportalen.egg-info/dependency_links.txt
+src/django_labportalen.egg-info/requires.txt
 src/django_labportalen.egg-info/top_level.txt
 src/labportalen/__init__.py
 src/labportalen/admin.py

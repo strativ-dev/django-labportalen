@@ -1,29 +1,3 @@
-Metadata-Version: 2.1
-Name: django-labportalen
-Version: 0.0.8
-Summary: A Django app to communicate with Swedish Labportalen.
-Home-page: https://github.com/strativ-dev/django-labportalen
-Author: Md. Badiuzzaman Pranto
-Author-email: prantoamt@gmail.com
-License: MIT License
-Platform: UNKNOWN
-Classifier: Environment :: Web Environment
-Classifier: Framework :: Django
-Classifier: Framework :: Django :: 3.2
-Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: MIT License
-Classifier: Operating System :: OS Independent
-Classifier: Programming Language :: Python
-Classifier: Programming Language :: Python :: 3
-Classifier: Programming Language :: Python :: 3 :: Only
-Classifier: Programming Language :: Python :: 3.6
-Classifier: Programming Language :: Python :: 3.7
-Classifier: Programming Language :: Python :: 3.8
-Classifier: Topic :: Internet :: WWW/HTTP
-Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
-Requires-Python: >=3.8
-License-File: LICENSE
-
 ==================
 django-labportalen
 ==================
@@ -82,4 +56,3 @@ Quick start
 
 6. Start the development server and visit http://127.0.0.1:8000/labportalen/api/
    to see available labportalen end-points.
-

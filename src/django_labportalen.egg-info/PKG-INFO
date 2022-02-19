@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-labportalen
-Version: 0.0.8
+Version: 0.0.10
 Summary: A Django app to communicate with Swedish Labportalen.
 Home-page: https://github.com/strativ-dev/django-labportalen
 Author: Md. Badiuzzaman Pranto
@@ -28,15 +28,13 @@ License-File: LICENSE
 django-labportalen
 ==================
 
-``django-labportalen`` is a Django app to communicate with swedish Labportalen service. Suitable with eRemiss version 3.1.0.
+``django-labportalen`` is a Django app to communicate with swedish Labportalen service. Suitable till eRemiss version 3.1.0.
 
 Features
 --------
 - Create remiss for a patient against a case.
 - Fetch analyses reports from SFTP server.
 
-
-Detailed documentation is in the "docs" directory.
 
 Quick start
 -----------
@@ -62,10 +60,10 @@ Quick start
 
     LABPORTALEN_SETTINGS = {
     'base_dir': BASE_DIR,                        ## required for all services
-    'sftp_host': env('SFTP_HOSTNAME'),           ## required to user SFTP service
-    'sftp_username': env('SFTP_USERNAME'),       ## required to user SFTP service
-    'sftp_password': env('SFTP_PASSWORD'),       ## required to user SFTP service
-    'sftp_file_prefix': env('SFTP_FILE_PREFIX'), ## required to user SFTP service
+    'sftp_host': env('SFTP_HOSTNAME'),           ## required to use SFTP service
+    'sftp_username': env('SFTP_USERNAME'),       ## required to use SFTP service
+    'sftp_password': env('SFTP_PASSWORD'),       ## required to use SFTP service
+    'sftp_file_prefix': env('SFTP_FILE_PREFIX'), ## required to use SFTP service
     'production_env_name': 'PRODUCTION',         ## required for all services
     'current_env_name': 'DEV',                   ## required for all services
     'soap_service_wsdl_url': env('SERVICE_URL'), ## required to use remiss creation service
@@ -79,6 +77,7 @@ Quick start
     'case_model': 'case.Case',                                         ## required
     'rid_mapping_models': ['case.CaseRid', 'patient_tests.BloodTest'], ## optional
     }
+    ## It is recommended to take the credentials from a .env file.
 
 6. Start the development server and visit http://127.0.0.1:8000/labportalen/api/
    to see available labportalen end-points.

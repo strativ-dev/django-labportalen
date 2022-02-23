@@ -177,6 +177,7 @@ class LabportalenServices(BaseLabportalenService):
         for report in reports:
             report_summary = {
                 'analysis_name': report.get('@AnaName'),
+                'analysis_code': report.get('@TestMethodCode'),
                 'analysis_result': report.get('@Value'),
                 'unit': report.get('@Unit'),
                 'ref_text': report.get('@RefText'),

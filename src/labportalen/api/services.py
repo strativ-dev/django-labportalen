@@ -14,7 +14,7 @@ from labportalen.models import HealthCheckType
 from labportalen.api.serializers import AnalysisSerializerForSoapService
 from labportalen.services import (
     BaseLabportalenService, 
-    LabportalenServices)
+    LabportalenService)
 
 
 class LabportalenApiServices(BaseLabportalenService):
@@ -90,7 +90,7 @@ class LabportalenApiServices(BaseLabportalenService):
         if self.current_env_name == self.production_env_name:
             raise NotAcceptable('This action is not acceptable in production environment')
         try:
-            LabportalenServices().fetch_reports(requisition_id=requisition_id)
+            LabportalenService().fetch_reports(requisition_id=requisition_id)
         except Exception as e:
             raise ParseError(f'Encountered error during fetching: {e}')
         return True

@@ -89,7 +89,7 @@ class BaseLabportalenService(metaclass=abc.ABCMeta):
 
 
 
-class LabportalenServices(BaseLabportalenService):
+class LabportalenService(BaseLabportalenService):
 
     def __init__(self) -> None:
         super().__init__()

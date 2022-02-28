@@ -4,16 +4,16 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
+from rest_framework.permissions import IsAuthenticated
 
 # Self import
 from labportalen.api.serializers import (
     CreateRemissSerializer,
     FetchReportForTestEnvSerializer)
 from labportalen.api.services import LabportalenApiServices
-from apps.core.permissions import IsNurse
 
 class CreateRemissApiView(APIView):
-    permission_classes = [IsNurse]
+    permission_classes = [IsAuthenticated]
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):
@@ -24,7 +24,7 @@ class CreateRemissApiView(APIView):
     
 
 class FetchReportForTestEnvApiView(APIView):
-    permission_classes = [IsNurse]
+    permission_classes = [IsAuthenticated]
     http_method_names = ['post']
 
     def post(self, request, *args, **kwargs):

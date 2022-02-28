@@ -15,7 +15,8 @@ import xmltodict
 import pysftp
 
 # Self import
-# from apps.third_party.django_logging.decorators import logger
+from logstack.loggers import Logger
+from logstack.decorators import log_to_remote
 from .models import LabportalenReport
 
 
@@ -89,7 +90,13 @@ class BaseLabportalenService(metaclass=abc.ABCMeta):
 
 
 class LabportalenServices(BaseLabportalenService):
+    HTTP_LOGGER = None
 
+    def __new__(cls, *args, **kwargs):
+        if cls.HTTP_LOGGER is None and 'http_logger' in kwargs:
+            cls.HTTP_LOGGER = kwargs['http_logger']
+        return super(LabportalenServices, cls).__new__(cls)
+        
     def __init__(self) -> None:
         super().__init__()
         self.is_valid()
@@ -105,6 +112,7 @@ class LabportalenServices(BaseLabportalenService):
         self.fields_config['sftp_file_prefix'] = {'required': True, 'type': str}
         self.fields_config['production_env_name'] = {'required': True, 'type': str}
         self.fields_config['current_env_name'] = {'required': True, 'type': str}
+        self.fields_config['http_logger'] = {'required': True, 'type': Logger}
     
     def authenticate_to_sftp(self) -> pysftp.Connection:
         cnopts = pysftp.CnOpts()

@@ -13,7 +13,6 @@ src/django_labportalen.egg-info/top_level.txt
 src/labportalen/__init__.py
 src/labportalen/admin.py
 src/labportalen/apps.py
-src/labportalen/config.py
 src/labportalen/models.py
 src/labportalen/services.py
 src/labportalen/tests.py

@@ -15,7 +15,6 @@ import xmltodict
 import pysftp
 
 # Self import
-from logstack.loggers import Logger
 from logstack.decorators import log_to_remote
 from .models import LabportalenReport
 

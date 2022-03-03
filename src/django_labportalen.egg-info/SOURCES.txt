@@ -22,7 +22,11 @@ src/labportalen/api/services.py
 src/labportalen/api/urls.py
 src/labportalen/api/views.py
 src/labportalen/migrations/0001_initial.py
+src/labportalen/migrations/0002_alter_lab_lab_code.py
 src/labportalen/migrations/__init__.py
+src/labportalen/migrations/__pycache__/0001_initial.cpython-39.pyc
+src/labportalen/migrations/__pycache__/0002_alter_lab_lab_code.cpython-39.pyc
+src/labportalen/migrations/__pycache__/__init__.cpython-39.pyc
 src/labportalen/sample_report/HKV_result_2.xml
 src/labportalen/soap_service/client.py
 src/labportalen/soap_service/services.py

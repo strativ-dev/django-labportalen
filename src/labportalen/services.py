@@ -15,7 +15,6 @@ import xmltodict
 import pysftp
 
 # Self import
-from logstack.decorators import log_to_remote
 from .models import LabportalenReport
 
 
@@ -116,7 +115,6 @@ class LabportalenService(BaseLabportalenService):
             raise Exception(f"Can not connect to the SFTP server, Exception: {e}")
         return sftp
     
-    @log_to_remote(settings.HTTP_LOGGER)
     def fetch_reports(self, requisition_id: Optional[str]=None) -> None:
         '''
         Fetches report from SFTP server

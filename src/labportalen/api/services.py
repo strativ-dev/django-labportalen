@@ -4,17 +4,23 @@ from typing import Any
 # Django import
 from django.db import transaction
 from django.db.models import Model
-from rest_framework.exceptions import (NotAcceptable, 
+from rest_framework.exceptions import (
+    NotAcceptable, 
     NotFound, 
-    ParseError)
+    ParseError,
+)
 
 # Self import
 from labportalen.soap_service.services import SoapServices
 from labportalen.models import HealthCheckType
-from labportalen.api.serializers import AnalysisSerializerForSoapService
+from labportalen.api.serializers import (
+    AnalysisSerializerForSoapService,
+    FetchReportForTestEnvSerializer,
+)
 from labportalen.services import (
     BaseLabportalenService, 
-    LabportalenService)
+    LabportalenService,
+)
 
 
 class LabportalenApiServices(BaseLabportalenService):
@@ -86,11 +92,14 @@ class LabportalenApiServices(BaseLabportalenService):
             raise NotAcceptable('No analysis found with this health check type')
         return analyses, health_check_type.conduction_lab.lab_code
 
-    def fetch_test_env_report(self, requisition_id: str) -> bool:
+    def fetch_test_env_report(self, data: dict) -> bool:
         if self.current_env_name == self.production_env_name:
             raise NotAcceptable('This action is not acceptable in production environment')
+        
+        FetchReportForTestEnvSerializer(data=data).is_valid(raise_exception=True)
+        
         try:
-            LabportalenService().fetch_reports(requisition_id=requisition_id)
+            LabportalenService().fetch_reports(requisition_id=data['rid'])
         except Exception as e:
             raise ParseError(f'Encountered error during fetching: {e}')
         return True

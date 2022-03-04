@@ -7,9 +7,7 @@ from rest_framework.status import HTTP_200_OK
 from rest_framework.permissions import IsAuthenticated
 
 # Self import
-from labportalen.api.serializers import (
-    CreateRemissSerializer,
-    FetchReportForTestEnvSerializer)
+from labportalen.api.serializers import CreateRemissSerializer
 from labportalen.api.services import LabportalenApiServices
 
 class CreateRemissApiView(APIView):
@@ -29,6 +27,5 @@ class FetchReportForTestEnvApiView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        FetchReportForTestEnvSerializer(data=data).is_valid(raise_exception=True)
-        fetched = LabportalenApiServices().fetch_test_env_report(data['rid'])
+        fetched = LabportalenApiServices().fetch_test_env_report(data)
         return Response({'Fetched': fetched}, status=HTTP_200_OK)

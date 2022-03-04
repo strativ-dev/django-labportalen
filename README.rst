@@ -30,10 +30,6 @@ Quick start
     path('labportalen/', include('labportalen.urls')),
 
 4. Run ``python manage.py migrate`` to create the labportalen models.
-5. Put the following codebase in ``settings.py`` and configure the ``Logger``'s constructor according to your setup::
-
-    from logstack.loggers import Logger
-    HTTP_LOGGER = Logger(scheme='http', url='54.93.245.55', port='24225', log_name='health-check')
 
 5. Configure LABPORTALEN_SETTINGS with required values in your project's ``settings.py``::
 

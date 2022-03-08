@@ -123,7 +123,11 @@ class LabportalenService(BaseLabportalenService):
         Returns:
             None
         '''
-        local_root_dir = os.path.join(self.base_dir, 'labportalen', 'sample_report')
+        local_root_dir = os.path.join(
+            self.base_dir,
+            'labportalen',
+            'sample_report'
+        )
         temp_path = local_root_dir + '/temp/'
         self._create_temp_dir_for_sftp_files(temp_path)
         sftp = self.authenticate_to_sftp()
@@ -134,15 +138,18 @@ class LabportalenService(BaseLabportalenService):
                 sftp.get(file_name, localpath=local_file_name)
             except Exception as e:
                 raise Exception(f"Couldn't get the file, {e}")
+            with open(local_file_name, 'rb') as fp:
+                data = fp.read()
+                parsed_data = xmltodict.parse(data)
+                requisition_id, test_results = self._save_parsed_xml_data(
+                    parsed_data,
+                    requisition_id
+                )
             if self.current_env_name == self.production_env_name:
                 try:
                     sftp.remove(file_name)
                 except Exception as e:
                     raise Exception(f"can not remove file, {e}")
-            with open(local_file_name, 'rb') as fp:
-                data = fp.read()
-                parsed_data = xmltodict.parse(data)
-                requisition_id, test_results = self._save_parsed_xml_data(parsed_data, requisition_id)
         sftp.close()
         print("SFTP Connection closed")
         self._delete_temp_dir_for_sftp_files(temp_path)

@@ -1,6 +1,7 @@
 # Python import
 import os
 import shutil
+from time import sleep
 from typing import Any, Optional
 import abc
 
@@ -105,14 +106,29 @@ class LabportalenService(BaseLabportalenService):
         self.fields_config['production_env_name'] = {'required': True, 'type': str}
         self.fields_config['current_env_name'] = {'required': True, 'type': str}
     
-    def authenticate_to_sftp(self) -> pysftp.Connection:
+    def authenticate_to_sftp(
+        self, 
+        max_retry: Optional[int]=5,
+    ) -> pysftp.Connection:
+
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
-        try:
-            sftp = pysftp.Connection(host=self.sftp_host, username=self.sftp_username, password=self.sftp_password, cnopts=cnopts)
-            print("Successfully connected to the sftp server")
-        except Exception as e:
-            raise Exception(f"Can not connect to the SFTP server, Exception: {e}")
+        for item in range(max_retry):
+            try:
+                sftp = pysftp.Connection(
+                    host=self.sftp_host,
+                    username=self.sftp_username,
+                    password=self.sftp_password,
+                    cnopts=cnopts
+                )
+                print("Successfully connected to the sftp server")
+                break
+            except Exception as e:
+                if item == (max_retry-1):
+                    raise Exception(
+                        f"Can not connect to the SFTP server, Exception: {e}"
+                    )
+                sleep(10)
         return sftp
     
     def fetch_reports(self, requisition_id: Optional[str]=None) -> None:

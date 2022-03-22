@@ -196,24 +196,32 @@ class LabportalenService(BaseLabportalenService):
             requisition_id = requisition_info.get('@ExternalRequisitionID', None)
         reports = requisition_info['Reply']['Sample']['Analysis']
         test_results = []
-        for report in reports:
-            report_summary = {
-                'analysis_name': report.get('@AnaName'),
-                'analysis_code': report.get('@TestMethodCode'),
-                'analysis_result': report.get('@Value'),
-                'unit': report.get('@Unit'),
-                'ref_text': report.get('@RefText'),
-                'ref_mark': report.get('@RefMark'),
-                'analysis_time': report.get('@AnalysisDateTime'),
-                'priority_code': report.get('@PriorityCode')
-            }
+        if type(reports) == list:
+            for report in reports:
+                report_summary = self._get_report_summary(report=report)
+                test_results.append(report_summary)
+        else:
+            report_summary = self._get_report_summary(report=reports)
             test_results.append(report_summary)
+
         LabportalenReport.objects.get_or_create(
             rid=requisition_id, 
             defaults={'test_results':test_results, 'status': LabportalenReport.SUCCESSFUL})
 
         return requisition_id, test_results
     
+    def _get_report_summary(self, report):
+        report_summary = {
+                    'analysis_name': report.get('@AnaName'),
+                    'analysis_code': report.get('@TestMethodCode'),
+                    'analysis_result': report.get('@Value'),
+                    'unit': report.get('@Unit'),
+                    'ref_text': report.get('@RefText'),
+                    'ref_mark': report.get('@RefMark'),
+                    'analysis_time': report.get('@AnalysisDateTime'),
+                    'priority_code': report.get('@PriorityCode')
+                }
+        return report_summary
 
     def _delete_temp_dir_for_sftp_files(self, temp_path):
         try:

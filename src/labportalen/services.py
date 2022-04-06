@@ -16,7 +16,7 @@ import xmltodict
 import pysftp
 
 # Self import
-from .constants import COMPLETED_REPLY_STATUS
+from .constants import COMPLETED_REPLY_STATUS, PARTIAL_REPLY_STATUS
 from .models import LabportalenReport
 
 
@@ -209,6 +209,8 @@ class LabportalenService(BaseLabportalenService):
         saved_report, created = LabportalenReport.objects.get_or_create(
             rid=requisition_id
         )
+        if saved_report.status == LabportalenReport.SUCCESSFUL and reply_status == COMPLETED_REPLY_STATUS:
+            raise Exception('The rid already has completed status. Therefore new report can not be taken.')
         if not saved_report.test_results:
             saved_report.test_results = test_results
         elif saved_report.test_results:
@@ -218,9 +220,8 @@ class LabportalenService(BaseLabportalenService):
 
         if reply_status == COMPLETED_REPLY_STATUS:
             saved_report.status = LabportalenReport.SUCCESSFUL
-        else:
-            saved_report.status = LabportalenReport.PENDING
-
+        elif reply_status == PARTIAL_REPLY_STATUS:
+            saved_report.status = LabportalenReport.PARTIAL
         saved_report.save()
 
         return requisition_id, test_results

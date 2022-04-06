@@ -209,8 +209,6 @@ class LabportalenService(BaseLabportalenService):
         saved_report, created = LabportalenReport.objects.get_or_create(
             rid=requisition_id
         )
-        if saved_report.status == LabportalenReport.SUCCESSFUL and reply_status == COMPLETED_REPLY_STATUS:
-            raise Exception('The rid already has completed status. Therefore new report can not be taken.')
         if not saved_report.test_results:
             saved_report.test_results = test_results
         elif saved_report.test_results:

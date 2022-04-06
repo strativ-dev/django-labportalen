@@ -158,7 +158,7 @@ class LabportalenService(BaseLabportalenService):
             with open(local_file_name, 'rb') as fp:
                 data = fp.read()
                 parsed_data = xmltodict.parse(data)
-                requisition_id, test_results = self._save_parsed_xml_data(
+                self._save_parsed_xml_data(
                     parsed_data,
                     requisition_id
                 )

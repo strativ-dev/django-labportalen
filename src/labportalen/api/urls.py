@@ -11,7 +11,7 @@ from labportalen.api.views import (
 
 router = routers.SimpleRouter()
 router.register(
-    'labportalen-reports',
+    'labportalen/labportalen-reports',
     LabportalenReportModelViewset,
     'labportalen_report'
 )

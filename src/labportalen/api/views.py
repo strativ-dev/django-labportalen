@@ -40,3 +40,20 @@ class LabportalenReportModelViewset(ModelViewSet):
     serializer_class = LabportalenReportSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'retrieve']
+
+    def get_queryset(self, *args, **kwargs):
+        return self.model.objects.filter(**kwargs)
+
+    def list(self, request, *args, **kwargs):
+        if request.data.get('rid'):
+            kwargs['rid'] = request.data.get('rid')
+        if request.data.get('status'):
+            kwargs['status'] = request.data.get('status')
+
+        queryset = self.get_queryset(**kwargs)
+        serializer = self.get_serializer(
+            queryset, 
+            many=True, 
+        )
+        data = serializer.data
+        return data

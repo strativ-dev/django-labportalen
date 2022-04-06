@@ -51,9 +51,6 @@ class LabportalenReportModelViewset(ModelViewSet):
             kwargs['status'] = request.data.get('status')
 
         queryset = self.get_queryset(**kwargs)
-        serializer = self.get_serializer(
-            queryset, 
-            many=True, 
-        )
+        serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
-        return data
+        return Response(data=data, status=HTTP_200_OK)

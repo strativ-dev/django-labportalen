@@ -42,14 +42,13 @@ class LabportalenReportModelViewset(ModelViewSet):
     http_method_names = ['get', 'post', 'retrieve']
 
     def get_queryset(self, *args, **kwargs):
+        if self.request.GET.get('rid'):
+            kwargs['rid'] = self.request.GET.get('rid')
+        if self.request.GET.get('status'):
+            kwargs['status'] = self.request.GET.get('status')
         return self.model.objects.filter(**kwargs)
 
     def list(self, request, *args, **kwargs):
-        if request.data.get('rid'):
-            kwargs['rid'] = request.data.get('rid')
-        if request.data.get('status'):
-            kwargs['status'] = request.data.get('status')
-
         queryset = self.get_queryset(**kwargs)
         serializer = self.get_serializer(queryset, many=True)
         data = serializer.data

@@ -4,7 +4,7 @@
 from rest_framework import serializers
 
 # Self import
-from labportalen.models import Analysis
+from labportalen.models import Analysis, LabportalenReport
 
 
 class CreateRemissSerializer(serializers.Serializer):
@@ -38,3 +38,8 @@ class AnalysisSerializerForSoapService(serializers.ModelSerializer):
     class Meta:
         model = Analysis
         fields = ['AnalysisName', 'AnalysisCode']
+
+class LabportalenReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LabportalenReport
+        fields = '__all__'

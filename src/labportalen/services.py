@@ -16,6 +16,7 @@ import xmltodict
 import pysftp
 
 # Self import
+from .constants import COMPLETED_REPLY_STATUS
 from .models import LabportalenReport
 
 
@@ -195,6 +196,7 @@ class LabportalenService(BaseLabportalenService):
         if not requisition_id:
             requisition_id = requisition_info.get('@ExternalRequisitionID', None)
         reports = requisition_info['Reply']['Sample']['Analysis']
+        reply_status = requisition_info['Reply'].get('@StatusCode')
         test_results = []
         if type(reports) == list:
             for report in reports:
@@ -204,9 +206,22 @@ class LabportalenService(BaseLabportalenService):
             report_summary = self._get_report_summary(report=reports)
             test_results.append(report_summary)
 
-        LabportalenReport.objects.get_or_create(
-            rid=requisition_id, 
-            defaults={'test_results':test_results, 'status': LabportalenReport.SUCCESSFUL})
+        saved_report, created = LabportalenReport.objects.get_or_create(
+            rid=requisition_id
+        )
+        if not saved_report.test_results:
+            saved_report.test_results = test_results
+        elif saved_report.test_results:
+            prev_results = saved_report.test_results
+            all_results = prev_results + test_results
+            saved_report.test_results = all_results
+
+        if reply_status == COMPLETED_REPLY_STATUS:
+            saved_report.status = LabportalenReport.SUCCESSFUL
+        else:
+            saved_report.status = LabportalenReport.PENDING
+
+        saved_report.save()
 
         return requisition_id, test_results
     

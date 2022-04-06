@@ -216,10 +216,11 @@ class LabportalenService(BaseLabportalenService):
             all_results = prev_results + test_results
             saved_report.test_results = all_results
 
-        if reply_status == COMPLETED_REPLY_STATUS:
-            saved_report.status = LabportalenReport.SUCCESSFUL
-        elif reply_status == PARTIAL_REPLY_STATUS:
-            saved_report.status = LabportalenReport.PARTIAL
+        if saved_report.status != LabportalenReport.SUCCESSFUL:
+            if reply_status == COMPLETED_REPLY_STATUS:
+                saved_report.status = LabportalenReport.SUCCESSFUL
+            elif reply_status == PARTIAL_REPLY_STATUS:
+                saved_report.status = LabportalenReport.PARTIAL
         saved_report.save()
 
         return requisition_id, test_results

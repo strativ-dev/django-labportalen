@@ -39,7 +39,7 @@ class LabportalenReportModelViewset(ModelViewSet):
     model = LabportalenReport
     serializer_class = LabportalenReportSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'post', 'retrieve']
+    http_method_names = ['get', 'post', 'retrieve', 'patch']
 
     def get_queryset(self, *args, **kwargs):
         if self.request.GET.get('rid'):

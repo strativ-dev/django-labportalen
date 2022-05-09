@@ -180,6 +180,23 @@ class LabportalenService(BaseLabportalenService):
                 raise Exception(
                     "Creation of the directory %s failed" % temp_path)
 
+    def _get_unique_blood_test_results(self, old_result: list, new_result: list) -> list:
+        '''
+        new_result may contain duplicated blood marker which will be refined here to make it unique.
+        Parameters:
+            old_result -> list
+            new_result -> list
+        Returns:
+            total_result: list
+        '''
+        new_gotten_analysis_codes = [code.get('analysis_code') for code in new_result]
+
+        for test in old_result:
+            if test.get('analysis_code') in new_gotten_analysis_codes:
+                old_result.remove(test)
+
+        total_result = old_result + new_result
+        return total_result
 
     @transaction.atomic
     def _save_parsed_xml_data(self, parsed_data: dict[Any, Any], requisition_id: Optional[str]=None) -> tuple:
@@ -212,8 +229,8 @@ class LabportalenService(BaseLabportalenService):
         if not saved_report.test_results:
             saved_report.test_results = test_results
         elif saved_report.test_results:
-            prev_results = saved_report.test_results
-            all_results = prev_results + test_results
+            all_results = self._get_unique_blood_test_results(old_result=saved_report.test_results,
+                                                            new_result=test_results)
             saved_report.test_results = all_results
 
         if saved_report.status != LabportalenReport.SUCCESSFUL:

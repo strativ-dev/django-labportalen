@@ -60,7 +60,7 @@ class BaseLabportalenService(metaclass=abc.ABCMeta):
         app_level = '.'.join(splitted_model_confg)
         model = apps.get_model(app_label=app_level, model_name=model_name)
         return model
-    
+
     def _get_models_for_list_of_model_types(self) -> None:
         '''
         Get models from a list of models
@@ -79,7 +79,7 @@ class BaseLabportalenService(metaclass=abc.ABCMeta):
         '''
         self._setup_fields_config()
         self._validate_and_set_values()
-    
+
     @abc.abstractmethod
     def _setup_fields_config(self) -> None:
         '''
@@ -88,12 +88,14 @@ class BaseLabportalenService(metaclass=abc.ABCMeta):
         pass
 
 
-
 class LabportalenService(BaseLabportalenService):
-
     def __init__(self) -> None:
         super().__init__()
         self.is_valid()
+        self.REPORT_STATUS = {
+            COMPLETED_REPLY_STATUS: LabportalenReport.SUCCESSFUL,
+            PARTIAL_REPLY_STATUS: LabportalenReport.PARTIAL
+        }
 
     def _setup_fields_config(self) -> None:
         '''
@@ -106,11 +108,8 @@ class LabportalenService(BaseLabportalenService):
         self.fields_config['sftp_file_prefix'] = {'required': True, 'type': str}
         self.fields_config['production_env_name'] = {'required': True, 'type': str}
         self.fields_config['current_env_name'] = {'required': True, 'type': str}
-    
-    def authenticate_to_sftp(
-        self, 
-        max_retry: Optional[int]=5,
-    ) -> pysftp.Connection:
+
+    def authenticate_to_sftp(self, max_retry: Optional[int] = 5, ) -> pysftp.Connection:
 
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
@@ -125,14 +124,14 @@ class LabportalenService(BaseLabportalenService):
                 print("Successfully connected to the sftp server")
                 break
             except Exception as e:
-                if item == (max_retry-1):
+                if item == (max_retry - 1):
                     raise Exception(
                         f"Can not connect to the SFTP server, Exception: {e}"
                     )
                 sleep(10)
         return sftp
-    
-    def fetch_reports(self, requisition_id: Optional[str]=None) -> None:
+
+    def fetch_reports(self, requisition_id: Optional[str] = None) -> None:
         '''
         Fetches report from SFTP server
         Parameters:
@@ -140,16 +139,13 @@ class LabportalenService(BaseLabportalenService):
         Returns:
             None
         '''
-        local_root_dir = os.path.join(
-            self.base_dir,
-            'labportalen',
-            'sample_report'
-        )
+        local_root_dir = os.path.join(self.base_dir, 'labportalen', 'sample_report')
         temp_path = local_root_dir + '/temp/'
         self._create_temp_dir_for_sftp_files(temp_path)
         sftp = self.authenticate_to_sftp()
-        prefixed = [filename for filename in sftp.listdir() if self.sftp_file_prefix in filename]
+        prefixed = [filename for filename in sftp.listdir() if filename.startswith(self.sftp_file_prefix)]
         for file_name in prefixed:
+            print(file_name)
             local_file_name = temp_path + file_name
             try:
                 sftp.get(file_name, localpath=local_file_name)
@@ -158,10 +154,7 @@ class LabportalenService(BaseLabportalenService):
             with open(local_file_name, 'rb') as fp:
                 data = fp.read()
                 parsed_data = xmltodict.parse(data)
-                self._save_parsed_xml_data(
-                    parsed_data,
-                    requisition_id
-                )
+                self._save_parsed_xml_data(parsed_data, requisition_id)
             if self.current_env_name == self.production_env_name:
                 try:
                     sftp.remove(file_name)
@@ -170,7 +163,6 @@ class LabportalenService(BaseLabportalenService):
         sftp.close()
         print("SFTP Connection closed")
         self._delete_temp_dir_for_sftp_files(temp_path)
-
 
     def _create_temp_dir_for_sftp_files(self, temp_path: str) -> None:
         if not os.path.exists(temp_path):
@@ -190,16 +182,42 @@ class LabportalenService(BaseLabportalenService):
             total_result: list
         '''
         new_gotten_analysis_codes = [code.get('analysis_code') for code in new_result]
-
+        old_gotten_analysis_codes = [code.get('analysis_code') for code in old_result]
+        new_gotten_analysis_codes.sort()
+        old_gotten_analysis_codes.sort()
+        print(f'len of old_test = {len(old_result)}')
+        print(f'old_test = {old_gotten_analysis_codes}')
+        print(f'len of new_test = {len(new_result)}')
+        print(f'new_test = {new_gotten_analysis_codes}')
         for test in old_result:
-            if test.get('analysis_code') in new_gotten_analysis_codes:
-                old_result.remove(test)
+            if test.get('analysis_code') not in new_gotten_analysis_codes:
+                new_result.append(test)
 
-        total_result = old_result + new_result
-        return total_result
+        all_gotten_analysis_codes = [code.get('analysis_code') for code in new_result]
+        all_gotten_analysis_codes.sort()
+        print(f'all_test = {all_gotten_analysis_codes}')
+        print(f'len of all_test = {len(new_result)}')
+        return new_result
+
+    def _save_report_data_to_db(self, requisition_id, test_results, reply_status):
+        report_obj = LabportalenReport.objects.filter(rid=requisition_id).first()
+        if report_obj:
+            if report_obj.test_results:
+                test_results = self._get_unique_blood_test_results(old_result=report_obj.test_results,
+                                                                   new_result=test_results)
+            report_obj.test_results = test_results
+            if report_obj.status != LabportalenReport.SUCCESSFUL:
+                report_obj.status = self.REPORT_STATUS.get(reply_status.upper(), LabportalenReport.PARTIAL)
+            report_obj.save()
+        else:
+            report_obj = LabportalenReport.objects.create(
+                rid=requisition_id,
+                test_results=test_results,
+                status=self.REPORT_STATUS.get(reply_status.upper(), LabportalenReport.PARTIAL)
+            )
 
     @transaction.atomic
-    def _save_parsed_xml_data(self, parsed_data: dict[Any, Any], requisition_id: Optional[str]=None) -> tuple:
+    def _save_parsed_xml_data(self, parsed_data: dict[Any, Any], requisition_id: Optional[str] = None) -> tuple:
         '''
         Parameters:
             parsed_data -> dict
@@ -214,45 +232,29 @@ class LabportalenService(BaseLabportalenService):
             requisition_id = requisition_info.get('@ExternalRequisitionID', None)
         reports = requisition_info['Reply']['Sample']['Analysis']
         reply_status = requisition_info['Reply'].get('@StatusCode')
-        test_results = []
+
         if type(reports) == list:
-            for report in reports:
-                report_summary = self._get_report_summary(report=report)
-                test_results.append(report_summary)
+            test_results = {each.get('@TestMethodCode'): self._get_report_summary(each) for each in reports}.values()
+            test_results = list(test_results)
         else:
             report_summary = self._get_report_summary(report=reports)
-            test_results.append(report_summary)
+            test_results = [report_summary, ]
 
-        saved_report, created = LabportalenReport.objects.get_or_create(
-            rid=requisition_id
-        )
-        if not saved_report.test_results:
-            saved_report.test_results = test_results
-        elif saved_report.test_results:
-            all_results = self._get_unique_blood_test_results(old_result=saved_report.test_results,
-                                                            new_result=test_results)
-            saved_report.test_results = all_results
-
-        if saved_report.status != LabportalenReport.SUCCESSFUL:
-            if reply_status == COMPLETED_REPLY_STATUS:
-                saved_report.status = LabportalenReport.SUCCESSFUL
-            elif reply_status == PARTIAL_REPLY_STATUS:
-                saved_report.status = LabportalenReport.PARTIAL
-        saved_report.save()
-
+        self._save_report_data_to_db(requisition_id=requisition_id, test_results=test_results,
+                                     reply_status=reply_status)
         return requisition_id, test_results
-    
+
     def _get_report_summary(self, report):
         report_summary = {
-                    'analysis_name': report.get('@AnaName'),
-                    'analysis_code': report.get('@TestMethodCode'),
-                    'analysis_result': report.get('@Value'),
-                    'unit': report.get('@Unit'),
-                    'ref_text': report.get('@RefText'),
-                    'ref_mark': report.get('@RefMark'),
-                    'analysis_time': report.get('@AnalysisDateTime'),
-                    'priority_code': report.get('@PriorityCode')
-                }
+            'analysis_name': report.get('@AnaName'),
+            'analysis_code': report.get('@TestMethodCode'),
+            'analysis_result': report.get('@Value'),
+            'unit': report.get('@Unit'),
+            'ref_text': report.get('@RefText'),
+            'ref_mark': report.get('@RefMark'),
+            'analysis_time': report.get('@AnalysisDateTime'),
+            'priority_code': report.get('@PriorityCode')
+        }
         return report_summary
 
     def _delete_temp_dir_for_sftp_files(self, temp_path):
